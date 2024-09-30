@@ -2,12 +2,21 @@ import { eventModel } from "@/models/event-models";
 import { UserModel } from "@/models/user-models";
 import { replaceIdInArray, replaceIdInObject } from "@/utils/data-util";
 import { deepConvertObjectIds } from "@/utils/deepConvertObjectIds";
-import { Types } from "mongoose";
+import mongoose, { Types } from "mongoose";
 const { ObjectId } = Types;
 
-async function getAllEvents() {
-  const allEvents = await eventModel.find().lean();
-  return replaceIdInArray(allEvents);
+async function getAllEvents(q) {
+  let allEvents = [];
+  if (q && q.length > 0) {
+    const regex = new RegExp(q, "i");
+    allEvents = await eventModel.find({ name: { $regex: regex } }).lean();
+  } else {
+    allEvents = await eventModel.find({}).lean();
+  }
+  // return replaceIdInArray(allEvents);
+  const plainEvents = deepConvertObjectIds(allEvents);
+  const replace_idEvents = replaceIdInArray(plainEvents);
+  return replace_idEvents;
 }
 
 async function getEventById(eventId) {
@@ -29,7 +38,9 @@ async function findUswerByCredentials(credentials) {
     return {
       message: "User not found",
     };
-  return replaceIdInObject(user);
+  const userWithId = replaceIdInObject(user);
+  console.log("from queries", userWithId);
+  return userWithId;
 }
 
 // async function updateInterest(eventId, authId) {
@@ -119,17 +130,25 @@ async function updateInterest(eventId, authId) {
     // Convert the whole event to plain object and deeply convert ObjectId to strings
     const plainEvent = deepConvertObjectIds(event.toJSON());
 
-    console.log("from queries", plainEvent);
+    // console.log("from queries", plainEvent);
     return plainEvent; // Return the event as a plain object
   }
 
   return null;
 }
 
+async function updateGoing(eventId, authId) {
+  const event = await eventModel.findById(eventId);
+  event.going_ids.push(new mongoose.Types.ObjectId(authId));
+  event.save();
+  console.log(event);
+  return event;
+}
 export {
   createUser,
   findUswerByCredentials,
   getAllEvents,
   getEventById,
+  updateGoing,
   updateInterest,
 };

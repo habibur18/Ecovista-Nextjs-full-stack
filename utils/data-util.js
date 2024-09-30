@@ -1,9 +1,10 @@
 export const replaceIdInArray = (array) => {
-  return array.map((item) => ({ ...item, id: item._id.toString() }));
-  // .map((item) => {
-  //   delete item._id;
-  //   return item;
-  // });
+  return array
+    .map((item) => ({ ...item, id: item._id.toString() }))
+    .map((item) => {
+      delete item._id;
+      return item;
+    });
 };
 
 export const replaceIdInObject = (object) => {

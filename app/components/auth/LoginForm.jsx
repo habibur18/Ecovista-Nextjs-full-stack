@@ -18,7 +18,7 @@ const LoginForm = () => {
 
       // Logging formData properly
       for (const [key, value] of formData.entries()) {
-        console.log(key, value);
+        // console.log(key, value);
       }
       // console.log(formData);
       const found = await performLogin(formData);
